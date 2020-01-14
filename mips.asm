@@ -5,45 +5,54 @@
     lw \dst, 4($sp)
 .endm
 
-.macro push reg
+.macro push src
     addi $sp, $sp, 4
-    sw \reg, 0($sp)
+    sw \src, 0($sp)
 .endm
 
 .macro pop dst
     lw \dst, 0($sp)
-    # Zero-out stack top
-    sw $zero, 0($sp)
     # There is no subi instruction in the current version
     # of the MIPS instruction set
     addi $sp, $sp, -4
 .endm
 
-.macro multt dst reg1 reg2
-    mult \reg1, \reg2
+.macro multt dst src1 src2
+    mult \src1, \src2
     mflo \dst
 .endm
 
-# div
-
-# mod
-
-# not
-
-.macro clear dst
-    # Alternative:
-    # mov \dst, $zero
-    sw $zero, 4($sp)
-    lw \dst, 4($sp)
+# TODO: Implement
+.macro divt dst src1 src2
 .endm
 
-# ror
+# TODO: Implement
+.macro mod dst src1 src2
+.endm
 
-# rol
+# TODO: Implement
+.macro not dst
+.endm
 
-# bgt
+.macro clear dst
+    mov \dst, $zero
+.endm
 
-# ble
+# TODO: Implement
+.macro ror src const
+.endm
+
+# TODO: Implement
+.macro rol src const
+.endm
+
+# TODO: Implement
+.macro bgt src1 src2 label
+.endm
+
+# TODO: Implement
+.macro ble src1 src2 label
+.endm
 
 # Examples
 foo:
@@ -59,4 +68,5 @@ foo:
     multt $v0, $v0, $v0
     multt $v0, $v0, $v0
     clear $v0
+    addi $v0, 1
     jal $ra
