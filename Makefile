@@ -7,8 +7,8 @@ all: mips
 mips: mips.o mips_wrapper.o
 	mips-linux-gnu-gcc $(MIPS_VERSION) -o mips mips.o mips_wrapper.o
 
-mips.o: mips.asm
-	mips-linux-gnu-as $(MIPS_VERSION) -o mips.o mips.asm
+mips.o: mips.S
+	mips-linux-gnu-gcc -c $(MIPS_VERSION) -mfp32 -o mips.o mips.S
 
 mips_wrapper.o: mips_wrapper.c
 	mips-linux-gnu-gcc -c $(MIPS_VERSION) -mfp32 -o mips_wrapper.o mips_wrapper.c
