@@ -1,4 +1,5 @@
 .globl foo
+.globl bitwise_rotate
 
 .macro mov dst, src
     sw \src, 4($sp)
@@ -50,19 +51,29 @@
     mov \dst, $zero
 .endm
 
-# EXPERIMENTAL TODO:
 .macro ror src const
-    mov $t0, src
-    sra \src, \src, const
-    sla $t0, $t0, 32-const
+    # To rotate, we shift the integer const bits right and
+    # 32-const bits left and logical OR the result
+    mov $t0, \src
+    mov $t1, $zero
+    addi $t1, $t1, 32
+    addi $t1, $t1, -\const
+    # Discard sign bit with srl
+    # With sra you do not discard it
+    srl \src, \src, \const
+    sllv $t0, $t0, $t1
     or \src, \src, $t0
 .endm
 
-# EXPERIMENTAL TODO:
 .macro rol src const
-    mov $t0, src
-    sla \src, \src, const
-    sra $t0, $t0, 32-const
+    mov $t0, \src
+    mov $t1, $zero
+    addi $t1, $t1, 32
+    addi $t1, $t1, -\const
+    sll \src, \src, \const
+    # Discard sign bit with srlv
+    # With srav you do not discard it
+    srlv $t0, $t0, $t1
     or \src, \src, $t0
 .endm
 
@@ -117,4 +128,24 @@ sub_five:
     addi $v0, -2
     # $v0: 4
     # 4 should be the correct output considering the branches
+    j $ra
+
+# Paper on MIPS calling conventions:
+# https://courses.cs.washington.edu/courses/cse410/09sp/examples/MIPSCallingConventionsSummary.pdf
+# The ror and rol instructions appear to be working
+bitwise_rotate:
+    beq $a1, $zero, bitwise_rotate_left
+    j bitwise_rotate_right
+bitwise_rotate_left:
+    beq $a2, $zero, bitwise_rotate_quit
+    rol $a0, 1
+    addi $a2, $a2, -1
+    j bitwise_rotate_left
+bitwise_rotate_right:
+    beq $a2, $zero, bitwise_rotate_quit
+    ror $a0, 1
+    addi $a2, $a2, -1
+    j bitwise_rotate_right
+bitwise_rotate_quit:
+    mov $v0, $a0
     j $ra
