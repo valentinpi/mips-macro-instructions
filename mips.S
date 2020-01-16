@@ -20,31 +20,22 @@
 
 .macro multt dst src1 src2
     # Preserve value of src1
-    sw \src1, 4($sp)
     mult \src1, \src2
     mflo \dst
-    lw \src1, 4($sp)
 .endm
 
-# EXPERIMENTAL TODO:
 .macro divt dst src1 src2
-    sw \src1, 4($sp)
     div \src1, \src2
     mflo \dst
-    lw \src1, 4($sp)
 .endm
 
-# EXPERIMENTAL TODO:
 .macro mod dst src1 src2
-    sw \src1, 4($sp)
     div \src1, \src2
     mfhi \dst
-    lw \src1, 4($sp)
 .endm
 
-# EXPERIMENTAL TODO:
 .macro not dst
-    xor \dst, \dst, \dst
+    nor \dst, \dst, \dst
 .endm
 
 .macro clear dst
@@ -77,7 +68,6 @@
     or \src, \src, $t0
 .endm
 
-# EXPERIMENTAL TODO:
 .macro bgt src1 src2 label
     # Save register first
     sw \src2, 4($sp)
@@ -88,46 +78,50 @@
     beq $t0, $t1, \label
 .endm
 
-# EXPERIMENTAL TODO:
 .macro ble src1 src2 label
     beq \src1, \src2, \label
     bgt \src2, \src1, \label
 .endm
 
 # Examples
-# ATTENTION:
+# Tests the mov, push, pop, multt, clear, bgt and ble instructions
 foo:
     mov $v0, $zero
     addi $v0, $v0, 5
     push $v0
     addi $v0, $v0, 5
     pop $v0
-    # mov, push and pop are working
     multt $v0, $v0, $v0
     multt $v0, $v0, $v0
     multt $v0, $v0, $v0
-    # multt is working
     divt $v0, $v0, $v0
     mod $v0, $v0, $v0
-    # divt and modt not tested yet, but TODO:
     clear $v0
-    # clear is working
     addi $v0, 1
     # $v0: 1
+    not $v0
+    not $v0
+    # $v0 should be 1 if not is working
     bgt $v0, $zero, add_five
     # $v0: 1
     j $ra
 add_five:
     addi $v0, 5
     # $v0: 6
-    # bgt is working
     ble $zero, $v0, sub_five
     # $v0: 6
     j $ra
 sub_five:
     addi $v0, -2
-    # $v0: 4
-    # 4 should be the correct output considering the branches
+    mov $t0, $zero
+    addi $t0, $t0, 2
+    divt $v0, $v0, $t0
+    addi $v0, $v0, 1
+    addi $t0, $t0, 1
+    mod $v0, $v0, $t0
+    # $v0: 0
+    # 0 should be the correct output considering the branches
+    # and all instructions used
     j $ra
 
 # Paper on MIPS calling conventions:
