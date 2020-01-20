@@ -45,6 +45,8 @@
 .endm
 
 .macro ror src const
+    push $t0
+    push $t1
     # To rotate, we shift the integer const bits right and
     # 32-const bits left and logical OR the result
     mov $t0, \src
@@ -56,9 +58,13 @@
     srl \src, \src, \const
     sllv $t0, $t0, $t1
     or \src, \src, $t0
+    pop $t1
+    pop $t0
 .endm
 
 .macro rol src const
+    push $t0
+    push $t1
     mov $t0, \src
     clear $t1
     addi $t1, $t1, 32
@@ -68,16 +74,23 @@
     # With srav you do not discard it
     srlv $t0, $t0, $t1
     or \src, \src, $t0
+    pop $t1
+    pop $t0
 .endm
 
 .macro bgt src1 src2 label
-    # Save register first
-    sw \src2, 4($sp)
-    slt \src2, \src1
-    mov $t0, \src2
-    mov $t1, \src2
-    lw \src2, 4($sp)
-    beq $t0, $t1, \label
+    push $t0
+    # Check if src2 < src1 aka src1 > src2
+    clear $t0
+    slt $t0, \src2, \src1
+    # If not smaller, continue and jump
+    # We are using a local label here, which is delcared in forward
+    # See https://zeroesnones.wordpress.com/2015/04/14/defining-local-label-inside-macro-x86-assemblygas-syntax/
+    beq $t0, $zero, 0f
+    pop $t0
+    j \label
+0:
+    pop $t0
 .endm
 
 .macro ble src1 src2 label
