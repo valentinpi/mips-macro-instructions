@@ -2,12 +2,14 @@
 .globl bitwise_rotate
 
 .macro mov dst, src
-    sw \src, 4($sp)
-    lw \dst, 4($sp)
+    xor \dst, \dst, \dst
+    add \dst, \src
 .endm
 
 .macro push src
-    addi $sp, $sp, 4
+    # Stack grows from high addresses to low addresses
+    # See memory map: http://wilkinsonj.people.cofc.edu/mem-map.html
+    addi $sp, $sp, -4
     sw \src, 0($sp)
 .endm
 
@@ -15,7 +17,7 @@
     lw \dst, 0($sp)
     # There is no subi instruction in the current version
     # of the MIPS instruction set
-    addi $sp, $sp, -4
+    addi $sp, $sp, 4
 .endm
 
 .macro multt dst src1 src2
@@ -39,14 +41,14 @@
 .endm
 
 .macro clear dst
-    mov \dst, $zero
+    xor \dst, \dst, \dst
 .endm
 
 .macro ror src const
     # To rotate, we shift the integer const bits right and
     # 32-const bits left and logical OR the result
     mov $t0, \src
-    mov $t1, $zero
+    clear $t1
     addi $t1, $t1, 32
     addi $t1, $t1, -\const
     # Discard sign bit with srl
@@ -58,7 +60,7 @@
 
 .macro rol src const
     mov $t0, \src
-    mov $t1, $zero
+    clear $t1
     addi $t1, $t1, 32
     addi $t1, $t1, -\const
     sll \src, \src, \const
