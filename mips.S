@@ -7,17 +7,21 @@
 .endm
 
 .macro push src
-    # Stack grows from high addresses to low addresses
-    # See memory map: http://wilkinsonj.people.cofc.edu/mem-map.html
-    addi $sp, $sp, -4
+    # Stack grows from high addresses to low addresses (empty descending)
+    # The stack pointer points to the position that is currently free
+    # See (stack architectures):
+    # http://www.keil.com/support/man/docs/armasm/armasm_dom1359731152499.htm
+    # See (memory map):
+    # http://wilkinsonj.people.cofc.edu/mem-map.html
+    # There is no subi instruction in the current version
+    # of the MIPS instruction set
     sw \src, 0($sp)
+    addi $sp, $sp, -4
 .endm
 
 .macro pop dst
-    lw \dst, 0($sp)
-    # There is no subi instruction in the current version
-    # of the MIPS instruction set
     addi $sp, $sp, 4
+    lw \dst, 0($sp)
 .endm
 
 .macro multt dst src1 src2
